@@ -1,4 +1,4 @@
-from mininet.log import info, debug, warn, setLogLevel
+from mininet.log import debug, setLogLevel
 setLogLevel('info')
 # Check to see if mininet or containernet is installed
 try:
@@ -9,23 +9,53 @@ except NameError:
     debug("*** Containernet not found - Fallback to normal Mininet")
     from mininet.net import Mininet
     mn_cls = Mininet
-from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.net import Controller
 import networkx as nx
 from geopy.distance import distance as dist
 import numpy as np
 
+
 class MnGML:
     """
     Create a simple Mininet/Containernet topology from GraphML files
     """
-    def __init__(self, graphml_file: str, controller=Controller):
-        self.graphml_file_path = graphml_file
-        self.controller = controller
-        self.nx_net = self.read_graphml_file(self.graphml_file_path)
+    def __init__(self, graphml_file: str, controller=Controller, image_name="ubuntu", per_node=1):
+        self.__graphml_file_path = graphml_file
+        self.__controller = controller
+        self.__image_name = image_name
+        self.__per_node = per_node
+        self.__nx_net = self.read_graphml_file(self.__graphml_file_path)
+        self.net, self.topology = self.create_topology()
 
-    def read_graphml_file(self, file_path):
+    def create_topology(self):
+        """
+        Create a mininet topology
+        """
+        # storage for added nodes
+        net = mn_cls(controller=self.__controller)
+        net.addController('c0')
+        topology = {}
+        # add switches
+        for n in self.__nx_net.nodes(data=True):
+            topology[n[0]] = {}
+            topology[n[0]]['switch'] = net.addSwitch(f's{n[0]}')
+            topology[n[0]]['nodes'] = []
+            # add nodes and connect to switches
+            for i in range(self.__per_node):
+                topology[n[0]]['nodes'].append(net.addDocker(f'd{n[0]}{i}', dimage=self.__image_name))
+                net.addLink(topology[n[0]]['switch'], topology[n[0]]['nodes'][i])
+        # add links between switches
+        for e in self.__nx_net.edges(data=True):
+            n1 = topology[e[0]]['switch']
+            n2 = topology[e[1]]['switch']
+            delay = f"{e[2]['delay']}ms"
+            net.addLink(n1, n2, cls=TCLink, delay=delay)
+
+        return net, topology
+
+    @staticmethod
+    def read_graphml_file(file_path):
         """
         Return a NX object from the GraphML file
         Based on:
@@ -52,30 +82,3 @@ class MnGML:
                 delay = int(np.around((distance / SPEED_OF_LIGHT * 1000) * PROPAGATION_FACTOR))
             e[2]["delay"] = delay
         return graphml_nx
-
-
-# from mininet.log import info, setLogLevel
-
-mn_net = MnGML("/home/haydar/projects/cn-graphml/Abilene.graphml")
-
-net = mn_cls(controller=Controller)
-info('*** Adding controller\n')
-net.addController('c0')
-info('*** Adding docker containers\n')
-d1 = net.addDocker('d1', ip='10.0.0.251', dimage="ubuntu:trusty")
-d2 = net.addDocker('d2', ip='10.0.0.252', dimage="ubuntu:trusty")
-info('*** Adding switches\n')
-s1 = net.addSwitch('s1')
-s2 = net.addSwitch('s2')
-info('*** Creating links\n')
-net.addLink(d1, s1)
-net.addLink(s1, s2, cls=TCLink, delay='100ms', bw=1)
-net.addLink(s2, d2)
-info('*** Starting network\n')
-net.start()
-info('*** Testing connectivity\n')
-net.ping([d1, d2])
-# info('*** Running CLI\n')
-# CLI(net)
-info('*** Stopping network')
-net.stop()
