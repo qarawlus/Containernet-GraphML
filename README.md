@@ -21,7 +21,6 @@ Immport the MnGML class, and pass the absolute path to the GraphML file.
 ```python
 from mn_gml import MnGML
 
-
 mn_gml = MnGML("abs_path_to_graphml_file", image_name="qarawlus/ping", per_node=2)
 
 net = mn_gml.net
@@ -33,4 +32,3 @@ This will create a Containernet topology with the following mapping:
 - `per_node` docker containers based on the image provided in `image_name` will be created at the node and linked to the switch. 
 
 Each node can be accessed the the topology object. 
-
