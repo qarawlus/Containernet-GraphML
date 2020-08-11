@@ -25,7 +25,7 @@ script:
   # style check
   - flake8 scr
   - travis_wait 60 docker build --tag ping examples/ping/
-  - sudo python examples/ping
+  - sudo python examples/ping/cn_ping_test.py
 notifications:
   email:
     on_success: change
