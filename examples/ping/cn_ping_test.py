@@ -1,7 +1,8 @@
-from mn_gml.mn_gml import MnGML
+from mn_gml import MnGML
 from mininet.net import CLI
+import os
 
-mn_gml = MnGML("/home/haydar/projects/cn-graphml/Abilene.graphml", image_name="ping")
+mn_gml = MnGML(os.path.join(os.getcwd(), "examples/ping/Abilene.graphml"), image_name="qarawlus/ping")
 
 net = mn_gml.net
 topology = mn_gml.topology
