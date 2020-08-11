@@ -10,7 +10,7 @@ setup(
     packages=find_packages('src'),
     long_description="""
         Create a Minitnet topology based on GraphML topologies
-        available from the TopologyZoo 
+        available from the TopologyZoo
         http://www.topology-zoo.org/dataset.html
         """,
     keywords='GraphML',
