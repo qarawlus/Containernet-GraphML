@@ -10,7 +10,7 @@ matrix:
 before_install:
   # Pull and build containernet
   - sudo apt-get update -qq
-  - sudo apt-get install -qq vlan
+  - sudo apt-get install -qq vlan flake8
   - sudo DEBIAN_FRONTEND=noninteractive apt-get -y install ansible libffi-dev libssl-dev
   - git clone https://github.com/containernet/containernet.git
   - cd containernet/ansible
@@ -23,7 +23,7 @@ install:
 # run tests
 script:
   # style check
-  - flake8 scr
+  - flake8 src
   - travis_wait 60 docker build --tag ping examples/ping/
   - sudo python examples/ping/cn_ping_test.py
 notifications:
