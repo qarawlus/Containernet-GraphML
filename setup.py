@@ -18,6 +18,7 @@ setup(
     install_requires=[
         'setuptools',
         'networkx',
+        'mininet',
         'geopy',
         'numpy'
     ],
