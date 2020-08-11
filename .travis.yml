@@ -19,7 +19,7 @@ before_install:
 # install ContainerNet-GraphML Module
 install:
     - cd ../..
-    - pip install -e .
+    - sudo pip3 install -e .
 # run tests
 script:
   # style check
